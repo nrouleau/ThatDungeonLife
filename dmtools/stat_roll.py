@@ -18,9 +18,13 @@ def main():
     expected_stdev = 9.7065
 
     PB = []
+    statslist = []
     N = 100000
     for i in range(N):
-        PB.append(get_pb_sum())
+        stats = CharacterStats()
+        stats.generate_stats()
+        PB.append(stats.point_buy)
+        statslist.append(stats)
 
     avg = numpy.mean(PB)
     stdev = numpy.std(PB)
@@ -38,22 +42,35 @@ def main():
     max_cutoff = 40 # one std dev away from avg
     outliers = 0
 
+    i = 0
+    best_stats = []
+    worst_stats = []
     for pb in PB:
+        min_assumed_best_stat = 0
         if(pb < min_allowed):
             pb_used.append(min_allowed)
+            min_assumed_best_stat = 15
         elif(pb <= max_cutoff):
             pb_used.append(pb)
         else:
             if pb > max_cutoff:
                 reroll_count += 1
-                new_value = get_pb_sum()
-                if(new_value < min_allowed):
+                new_stats = CharacterStats()
+                new_stats.generate_stats()
+                statslist[i] = new_stats
+                new_value = new_stats.point_buy
+                if(new_stats.point_buy < min_allowed):
+                    min_assumed_best_stat = 15
                     new_value = min_allowed
 
             if(new_value > max_cutoff):
                 outliers += 1
             pb_used.append(new_value)
             pb_after_reroll.append(new_value)
+
+        best_stats.append(max(min_assumed_best_stat, statslist[i].max))
+        worst_stats.append(statslist[i].min)
+        i += 1
 
     avg = numpy.mean(pb_used)
     stdev = numpy.std(pb_used)
@@ -63,9 +80,36 @@ def main():
     print("Test Result: Avg = {0}, StdDev = {1}, min = {2}, max = {3}, reroll = {4}% (for N = {5})".format(print_friendly(avg,3), print_friendly(stdev,2), min(pb_used), max(pb_used), reroll_count*100/N, len(pb_used)))
     print("Subcategory after re-roll: Avg = {0}, StdDev = {1}, min = {2}, max = {3}, (for N = {4})".format(print_friendly(avg_reroll,3), print_friendly(stdev_reroll,2), min(pb_after_reroll), max(pb_after_reroll), len(pb_after_reroll)))
     print("Percent above max cutoff: {0}%".format(outliers*100/N))
+    print("----")
+    print("Percentages of max stat values:")
+    for val in range(min(best_stats),max(best_stats)+1):
+        print("{0}: {1}%".format(val, print_friendly(best_stats.count(val)*100/N,2)))
+    print("----")
+    print("Percentages of min stat values:")
+    for val in range(min(worst_stats),max(worst_stats)+1):
+        print("{0}: {1}%".format(val, print_friendly(worst_stats.count(val)*100/N,2)))
     print("Used min allowed value = {0}, and max cutoff = {1}".format(min_allowed, max_cutoff))
     print("====================================================\r\n")
 
+    plt.figure()
+    histogram_integer_data(worst_stats, 'red')
+    plt.ylabel("Probability")
+    plt.xlabel("Stat value")
+    title_str = "Worst Stats for 4d6 drop 1"
+    #title_str += "\nProbability of {0} = {1}%, ".format(min_allowed, print_friendly(proportions[0]*100,4))
+    #title_str += "Avg = {0}, StdDev = {1}".format(print_friendly(avg,4), print_friendly(stdev,4))
+    plt.title(title_str)
+
+    plt.figure()
+    histogram_integer_data(best_stats, 'green')
+    plt.ylabel("Probability")
+    plt.xlabel("Stat value")
+    title_str = "Best Stats for 4d6 drop 1"
+    #title_str += "\nProbability of {0} = {1}%, ".format(min_allowed, print_friendly(proportions[0]*100,4))
+    #title_str += "Avg = {0}, StdDev = {1}".format(print_friendly(avg,4), print_friendly(stdev,4))
+    plt.title(title_str)
+
+    plt.figure()
     histogram_integer_data(PB, 'yellow')
     proportions, bins = histogram_integer_data(pb_used, 'red')
     #proportions, bins = histogram_integer_data(pb_after_reroll, 'blue')
@@ -75,6 +119,7 @@ def main():
     title_str += "\nProbability of {0} = {1}%, ".format(min_allowed, print_friendly(proportions[0]*100,4))
     title_str += "Avg = {0}, StdDev = {1}".format(print_friendly(avg,4), print_friendly(stdev,4))
     plt.title(title_str)
+
     plt.show()
 
 def print_friendly(value, sigfigs):
@@ -151,6 +196,23 @@ def roll_n_d_sided_choose_m(n, d, m):
     Dice = sorted(Dice)
     Chosen = Dice[-m:]
     return sum(Chosen)
+
+class CharacterStats():
+    def __init__(self):
+        base_stats = []
+        min = 0
+        max = 0
+        avg = 0
+        point_buy = 0
+
+    def generate_stats(self):
+        self.base_stats = roll_one_stats_set()
+        self.min = min(self.base_stats)
+        self.max = max(self.base_stats)
+        self.avg = numpy.mean(self.base_stats)
+        self.point_buy = sum(calculate_pointbuy(self.base_stats))
+        return self.base_stats
+
 
 if __name__ == '__main__':
     main()
