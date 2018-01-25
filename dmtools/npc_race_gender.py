@@ -3,6 +3,7 @@ import os
 import sys
 import numpy
 import random
+import matplotlib.pyplot as plt
 
 # Generates random races and genders based on an configured population distribution.
 # Useful for generating NPCs in-game or in-prep
@@ -14,12 +15,12 @@ import random
 # So many more things
 def main():
     tasaldahn_races = RaceDistribution()
-    tasaldahn_races.set_percentage("dwarf", 6.7)
+    tasaldahn_races.set_percentage("dwarf", 10)
     tasaldahn_races.set_percentage("elf", 5)
-    tasaldahn_races.set_percentage("halfling", 15)
+    tasaldahn_races.set_percentage("halfling", 16)
     tasaldahn_races.set_percentage("gnome", 3)
     tasaldahn_races.set_percentage("dragonborn", 2.5)
-    tasaldahn_races.set_percentage("halfelf", 7.5)
+    tasaldahn_races.set_percentage("halfelf", 9)
     tasaldahn_races.set_percentage("halforc", 1.5)
     tasaldahn_races.set_percentage("tiefling", 2.7)
     tasaldahn_races.set_percentage("human", tasaldahn_races.get_other() - 0.1)
@@ -30,6 +31,7 @@ def main():
     print(tasaldahn_races.get_random_race() + " " + get_random_gender())
     print(tasaldahn_races.get_random_race() + " " + get_random_gender())
     print(tasaldahn_races.get_random_race() + " " + get_random_gender())
+    #tasaldahn_races.generate_pie_plot()
     #tasaldahn_races.self_test()
 
 
@@ -62,6 +64,14 @@ class RaceDistribution:
         self.race_keys_ordered_list = list(self.race_dict.keys())
         self.race_dict['other'] = RaceDetails()
         self.race_keys_ordered_list.append('other')
+
+    def generate_pie_plot(self):
+        pdfs = []
+        for race_name in self.race_keys_ordered_list:
+            pdfs.append(self.race_dict[race_name].pdf)
+
+        plt.pie(pdfs, labels=self.race_keys_ordered_list, shadow=True)
+        plt.show()
 
     def get_other(self):
         return round(self.race_dict['other'].pdf, 4)
