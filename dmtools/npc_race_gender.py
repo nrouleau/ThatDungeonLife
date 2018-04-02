@@ -19,10 +19,11 @@ def main():
     tasaldahn_races.set_percentage("elf", 5)
     tasaldahn_races.set_percentage("halfling", 16)
     tasaldahn_races.set_percentage("gnome", 3)
-    tasaldahn_races.set_percentage("dragonborn", 2.5)
+    tasaldahn_races.set_percentage("dragonborn", 2.4)
     tasaldahn_races.set_percentage("halfelf", 9)
-    tasaldahn_races.set_percentage("halforc", 1.5)
-    tasaldahn_races.set_percentage("tiefling", 2.7)
+    tasaldahn_races.set_percentage("halforc", 1.3)
+    tasaldahn_races.set_percentage("tiefling", 2.2)
+    tasaldahn_races.set_percentage("goliath", 0.5)
     tasaldahn_races.set_percentage("human", tasaldahn_races.get_other() - 0.1)
     #print(tasaldahn_races.get_other())
 
@@ -60,6 +61,7 @@ class RaceDistribution:
         self.race_dict['halfelf'] = RaceDetails()
         self.race_dict['halforc'] = RaceDetails()
         self.race_dict['tiefling'] = RaceDetails()
+        self.race_dict['goliath'] = RaceDetails()
 
         self.race_keys_ordered_list = list(self.race_dict.keys())
         self.race_dict['other'] = RaceDetails()
