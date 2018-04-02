@@ -42,6 +42,12 @@ def main():
     max_cutoff = 40 # one std dev away from avg
     outliers = 0
 
+    best_stats_original = []
+    worst_stats_original = []
+    for stats in statslist:
+        best_stats_original.append(stats.max)
+        worst_stats_original.append(stats.min)
+
     i = 0
     best_stats = []
     worst_stats = []
@@ -92,29 +98,34 @@ def main():
     print("====================================================\r\n")
 
     plt.figure()
+    histogram_integer_data(worst_stats_original, 'black')
     histogram_integer_data(worst_stats, 'red')
     plt.ylabel("Probability")
     plt.xlabel("Stat value")
+    plt.legend(['Straight Rolls', 'With mods'])
     title_str = "Worst Stats for 4d6 drop 1"
     #title_str += "\nProbability of {0} = {1}%, ".format(min_allowed, print_friendly(proportions[0]*100,4))
     #title_str += "Avg = {0}, StdDev = {1}".format(print_friendly(avg,4), print_friendly(stdev,4))
     plt.title(title_str)
 
     plt.figure()
+    histogram_integer_data(best_stats_original, 'black')
     histogram_integer_data(best_stats, 'green')
     plt.ylabel("Probability")
     plt.xlabel("Stat value")
+    plt.legend(['Straight Rolls', 'With mods'])
     title_str = "Best Stats for 4d6 drop 1"
     #title_str += "\nProbability of {0} = {1}%, ".format(min_allowed, print_friendly(proportions[0]*100,4))
     #title_str += "Avg = {0}, StdDev = {1}".format(print_friendly(avg,4), print_friendly(stdev,4))
     plt.title(title_str)
 
     plt.figure()
-    histogram_integer_data(PB, 'yellow')
-    proportions, bins = histogram_integer_data(pb_used, 'red')
+    histogram_integer_data(PB, 'black')
+    proportions, bins = histogram_integer_data(pb_used, 'blue')
     #proportions, bins = histogram_integer_data(pb_after_reroll, 'blue')
     plt.ylabel("Probability")
     plt.xlabel("Point buy")
+    plt.legend(['Straight Rolls', 'With mods'])
     title_str = "Roll for stats (4d6 drop 1) in point buy values"
     title_str += "\nProbability of {0} = {1}%, ".format(min_allowed, print_friendly(proportions[0]*100,4))
     title_str += "Avg = {0}, StdDev = {1}".format(print_friendly(avg,4), print_friendly(stdev,4))
@@ -130,6 +141,8 @@ def print_friendly(value, sigfigs):
     return round(value, sigfigs - digits_before_decimal)
 
 def histogram_integer_data(data, color):
+    if(len(data) <= 1):
+        raise ValueError("Input data array must be of length >1")
     bin_set = [x+0.5 for x in range(min(data)-1, max(data)+1)]
     axes = plt.gca()
     x1,x2,y1,y2 = plt.axis()
